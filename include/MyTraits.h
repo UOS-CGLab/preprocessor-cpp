@@ -30,6 +30,7 @@ struct MyTraits : public OpenMesh::DefaultTraits {
     HalfedgeTraits {
         OpenMesh::Vec2f texcoord2D;
     };
+    HalfedgeAttributes(OpenMesh::Attributes::TexCoord2D);
 };
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<MyTraits> MyMesh;

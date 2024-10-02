@@ -1,5 +1,10 @@
 .DS_Store
 
 OpenMesh-11.0.0-mac-arm
+OpenMesh-11.0.0-mac-intel
 
 cmake-build-debug
+
+.idea
+
+etc

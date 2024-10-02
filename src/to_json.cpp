@@ -2,6 +2,8 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
+#include <vector>
+#include <algorithm>  // for std::transform
 
 // 내부적으로만 사용할 함수들은 이곳에 정의
 namespace {
@@ -55,6 +57,15 @@ namespace {
             std::cerr << "Error: Cannot open file " << filename << " for writing" << std::endl;
         }
     }
+
+    // 배열에 offset을 추가하는 함수
+    template <typename T>
+    std::vector<T> add_offset(const std::vector<T> &array, T offset)
+    {
+        std::vector<T> result(array.size());
+        std::transform(array.begin(), array.end(), result.begin(), [offset](T x) { return x + offset; });
+        return result;
+    }
 } // unnamed namespace
 
 void to_json(const std::vector<int> &v_indices, const std::vector<int> &v_offsets, const std::vector<int> &v_valances, const std::vector<int> &v_index, const std::vector<int> &v_data,
@@ -70,19 +81,50 @@ void to_json(const std::vector<int> &v_indices, const std::vector<int> &v_offset
     nlohmann::json data;
     data["depth"] = depth;
 
-    data["v_indices"] = v_indices;
-    data["v_offsets"] = v_offsets;
-    data["v_valances"] = v_valances;
-    data["v_index"] = v_index;
-    data["v_data"] = v_data;
+    data["data"] = nlohmann::json::object();
 
-    data["e_indices"] = e_indices;
-    data["e_data"] = e_data;
+    data["data"]["v_indices"] = v_indices;
+    data["data"]["v_offsets"] = v_offsets;
+    data["data"]["v_valances"] = v_valances;
+    data["data"]["v_index"] = v_index;
+    data["data"]["v_data"] = v_data;
 
-    data["f_indices"] = f_indices;
-    data["f_offsets"] = f_offsets;
-    data["f_valances"] = f_valances;
-    data["f_data"] = f_data;
+    data["data"]["e_indices"] = e_indices;
+    data["data"]["e_data"] = e_data;
+
+    data["data"]["f_indices"] = f_indices;
+    data["data"]["f_offsets"] = f_offsets;
+    data["data"]["f_valances"] = f_valances;
+    data["data"]["f_data"] = f_data;
+
+    // JSON 데이터 추가
+    append_to_json(data, output_dir);
+}
+
+// to_json2: offset 적용 후 JSON에 저장하는 함수
+void to_json(const std::vector<int> &v_indices, const std::vector<int> &v_offsets, const std::vector<int> &v_valances, const std::vector<int> &v_index, const std::vector<int> &v_data,
+              const std::vector<int> &e_indices, const std::vector<int> &e_data,
+              const std::vector<int> &f_indices, const std::vector<int> &f_offsets, const std::vector<int> &f_valances, const std::vector<int> &f_data,
+              int depth, int offset, const std::string &output_dir)
+{
+    nlohmann::json data;
+    data["depth"] = depth;
+
+    data["data"] = nlohmann::json::object();
+
+    data["data"]["v_indices"] = add_offset(v_indices, offset);
+    data["data"]["v_offsets"] = add_offset(v_offsets, offset);
+    data["data"]["v_valances"] = v_valances;
+    data["data"]["v_index"] = add_offset(v_index, offset);
+    data["data"]["v_data"] = add_offset(v_data, offset);
+
+    data["data"]["e_indices"] = add_offset(e_indices, offset);
+    data["data"]["e_data"] = add_offset(e_data, offset);
+
+    data["data"]["f_indices"] = add_offset(f_indices, offset);
+    data["data"]["f_offsets"] = add_offset(f_offsets, offset);
+    data["data"]["f_valances"] = f_valances;
+    data["data"]["f_data"] = add_offset(f_data, offset);
 
     // JSON 데이터 추가
     append_to_json(data, output_dir);
