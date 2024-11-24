@@ -97,9 +97,11 @@ void get_limit_point(MyMesh &mesh, const std::string &output_dir, int depth, int
     data["depth"] = depth;
     data["data"] = outputs;
 
-    if (depth <= 1)
+    if (depth < 1)
     {
         clear_json(output_dir);
+        append_to_json(data, output_dir);
+        return;
     }
     append_to_json(data, output_dir);
 }

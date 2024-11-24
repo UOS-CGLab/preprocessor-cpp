@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 
 // Function to write data into "patch.txt"
@@ -49,6 +48,20 @@ int get_patch(MyMesh& mesh, int idx, int depth, const std::string& output_dir)
 {
     int count = 0;
 
+//    int patched_count = 0;
+//    int not_patched_count = 0;
+//
+//    int all_faces = mesh.n_faces();
+//
+//    for (auto f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it)
+//    {
+//        if (mesh.data(*f_it).patched){
+//            patched_count++;
+//        } else {
+//            not_patched_count++;
+//        }
+//    }
+
     for (auto f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it)
     {
         if (mesh.data(*f_it).patched){
@@ -64,49 +77,77 @@ int get_patch(MyMesh& mesh, int idx, int depth, const std::string& output_dir)
                 }
             }
 
-            bool all_valence_4 = std::all_of(neighbors.begin(), neighbors.end(), [&](auto n){ return mesh.valence(n) == 4; });
+            bool all_valence_4 = true;
+            for (auto n : neighbors)
+            {
+                if (mesh.valence(n) != 4)
+                {
+                    all_valence_4 = false;
+                    break;
+                }
+            }
 
             if (depth != 0){
-                if (std::any_of(neighbors.begin(), neighbors.end(), [&](auto n){ return mesh.is_boundary(n); })){
+                bool is_boundary = false;
+                for (auto n : neighbors)
+                {
+                    if (mesh.is_boundary(n))
+                    {
+                        is_boundary = true;
+                        break;
+                    }
+                }
+
+                if (is_boundary)
+                {
                     continue;
                 }
             }
 
             if (all_valence_4)
             {
-                count++;
-
                 std::vector<int> v_indices;
                 for (auto fv_it = mesh.fv_iter(*f_it); fv_it.is_valid(); ++fv_it){
                     v_indices.push_back(fv_it->idx());
                 }
 
-                if (std::none_of(v_indices.begin(), v_indices.end(), [&](auto v){ return mesh.valence(mesh.vertex_handle(v)) != 4; })){
-                    continue;
+                bool not_extraordinary = true;
+                for (auto v : v_indices)
+                {
+                    if (mesh.valence(mesh.vertex_handle(v)) != 4)
+                    {
+                        not_extraordinary = false;
+                        break;
+                    }
                 }
 
+                if (!not_extraordinary)
+                {
+                    continue;
+                }
 
                 int f0 = v_indices[0];
                 int f1 = v_indices[1];
                 int f2 = v_indices[2];
                 int f3 = v_indices[3];
 
-                auto halfedge_v5_v9 = mesh.find_halfedge(mesh.vertex_handle(f0), mesh.vertex_handle(f1));
-                auto halfedge_v9_v10 = mesh.find_halfedge(mesh.vertex_handle(f1), mesh.vertex_handle(f2));
-                auto halfedge_v10_v6 = mesh.find_halfedge(mesh.vertex_handle(f2), mesh.vertex_handle(f3));
-                auto halfedge_v6_v5 = mesh.find_halfedge(mesh.vertex_handle(f3), mesh.vertex_handle(f0));
+                OpenMesh::HalfedgeHandle halfedge_v5_v9 = mesh.find_halfedge(mesh.vertex_handle(f0), mesh.vertex_handle(f1));
+                OpenMesh::HalfedgeHandle halfedge_v9_v10 = mesh.find_halfedge(mesh.vertex_handle(f1), mesh.vertex_handle(f2));
+                OpenMesh::HalfedgeHandle halfedge_v10_v6 = mesh.find_halfedge(mesh.vertex_handle(f2), mesh.vertex_handle(f3));
+                OpenMesh::HalfedgeHandle halfedge_v6_v5 = mesh.find_halfedge(mesh.vertex_handle(f3), mesh.vertex_handle(f0));
 
-                // Compute halfedges
-                auto h_top = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v6_v5)));
-                auto h_left = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v5_v9)));
-                auto h_bottom = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v9_v10)));
-                auto h_right = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v10_v6)));
+                // Compute halfedge OpenMesh::HalfedgeHandle h_top, h_left, h_bottom, h_right;
+
+                OpenMesh::HalfedgeHandle h_top = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v6_v5)));
+                OpenMesh::HalfedgeHandle h_left = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v5_v9)));
+                OpenMesh::HalfedgeHandle h_bottom = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v9_v10)));
+                OpenMesh::HalfedgeHandle h_right = mesh.next_halfedge_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(halfedge_v10_v6)));
 
                 if (depth != 0){
-                    if (mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(h_top)))) ||
-                        mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(h_right)))) ||
-                        mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(h_left)))) ||
-                        mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(h_bottom))))){
+                    if (mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(mesh.next_halfedge_handle(h_top))))) ||
+                        mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(mesh.next_halfedge_handle(h_right))))) ||
+                        mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(mesh.next_halfedge_handle(h_left))))) ||
+                        mesh.is_boundary(mesh.to_vertex_handle(mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(mesh.next_halfedge_handle(h_bottom)))))){
                         continue;
                     }
                 }
@@ -134,10 +175,10 @@ int get_patch(MyMesh& mesh, int idx, int depth, const std::string& output_dir)
                 // Collect texture coordinates for vertices
                 std::vector<OpenMesh::Vec2f> v5_texcoords, v6_texcoords, v9_texcoords, v10_texcoords;
 
-                OpenMesh::SmartHalfedgeHandle v5_iter = halfedge_v6_v5;
-                OpenMesh::SmartHalfedgeHandle v6_iter = halfedge_v10_v6;
-                OpenMesh::SmartHalfedgeHandle v9_iter = halfedge_v5_v9;
-                OpenMesh::SmartHalfedgeHandle v10_iter = halfedge_v9_v10;
+                OpenMesh::HalfedgeHandle v5_iter = halfedge_v6_v5;
+                OpenMesh::HalfedgeHandle v6_iter = halfedge_v10_v6;
+                OpenMesh::HalfedgeHandle v9_iter = halfedge_v5_v9;
+                OpenMesh::HalfedgeHandle v10_iter = halfedge_v9_v10;
 
 
                 for(int i = 0; i < 4; ++i)
@@ -170,10 +211,13 @@ int get_patch(MyMesh& mesh, int idx, int depth, const std::string& output_dir)
                         v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15,
                         idx, v5_texcoords, v6_texcoords, v9_texcoords, v10_texcoords, output_dir
                 );
+                count++;
 
             }
         }
     }
+
+    // std::cout << "Patched: " << patched_count << " Not patched: " << not_patched_count << " All faces: " << all_faces << " Count: " << count << std::endl;
 
     return count;
 }

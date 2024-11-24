@@ -34,18 +34,18 @@ target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Copy the etc directory to the build directory
-#add_custom_command(
-#        TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E echo "Copying etc directory..."
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory
-#        ${CMAKE_SOURCE_DIR}/etc ${CMAKE_BINARY_DIR}/etc
-#)
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying etc directory..."
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/etc ${CMAKE_BINARY_DIR}/etc
+)
 
 # Create a custom target for copying the directory
-#add_custom_target(copy_etc ALL
-#        COMMAND ${CMAKE_COMMAND} -E echo "Copying etc directory..."
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/etc ${CMAKE_BINARY_DIR}/etc
-#)
-#
-## Ensure the custom target is run after the main target is built
-#add_dependencies(${PROJECT_NAME} copy_etc)
+add_custom_target(copy_etc ALL
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying etc directory..."
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/etc ${CMAKE_BINARY_DIR}/etc
+)
+
+# Ensure the custom target is run after the main target is built
+add_dependencies(${PROJECT_NAME} copy_etc)

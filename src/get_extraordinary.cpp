@@ -3,7 +3,6 @@
 #include <string>
 #include <fstream>
 #include "MyTraits.h"
-#include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<MyTraits> MyMesh;
@@ -37,7 +36,7 @@ int add_face(MyMesh &mesh, MyMesh::FaceHandle f, int idx)
 
 
 // Main function to process extraordinary vertices (equivalent to get_extraordinary in Python)
-void get_extraordinary(MyMesh &mesh, const std::string &output_dir, int depth)
+void get_extraordinary(MyMesh &mesh)
 {
     int idx = 0;
 
@@ -154,28 +153,28 @@ void write_extraordinary_points(MyMesh &mesh, const std::string &output_dir, int
             }
 
             // Format and write the texture coordinates to the file
-            std::string v0_texcoords_data = "";
+            std::string v0_texcoords_data;
             for (const auto &texcoord : texcoords[0])
             {
                 v0_texcoords_data += std::to_string(texcoord[0]) + ", " + std::to_string(texcoord[1]) + ", ";
             }
             v0_texcoords_data = v0_texcoords_data.substr(0, v0_texcoords_data.size() - 2);
 
-            std::string v1_texcoords_data = "";
+            std::string v1_texcoords_data;
             for (const auto &texcoord : texcoords[1])
             {
                 v1_texcoords_data += std::to_string(texcoord[0]) + ", " + std::to_string(texcoord[1]) + ", ";
             }
             v1_texcoords_data = v1_texcoords_data.substr(0, v1_texcoords_data.size() - 2);
 
-            std::string v2_texcoords_data = "";
+            std::string v2_texcoords_data;
             for (const auto &texcoord : texcoords[2])
             {
                 v2_texcoords_data += std::to_string(texcoord[0]) + ", " + std::to_string(texcoord[1]) + ", ";
             }
             v2_texcoords_data = v2_texcoords_data.substr(0, v2_texcoords_data.size() - 2);
 
-            std::string v3_texcoords_data = "";
+            std::string v3_texcoords_data;
             for (const auto &texcoord : texcoords[3])
             {
                 v3_texcoords_data += std::to_string(texcoord[0]) + ", " + std::to_string(texcoord[1]) + ", ";

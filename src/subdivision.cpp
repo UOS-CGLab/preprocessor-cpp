@@ -2,14 +2,13 @@
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include <vector>
 #include <string>
-#include <iostream>
 #include <to_json.h>
 
 void compute_CC_vertex(MyMesh &mesh, MyMesh::VertexHandle v, OpenMesh::Vec3f &p)
 {
     int k = mesh.valence(v);
-    float alpha = 1.0f / (4.0f * k);
-    float beta = 6.0f / (4.0f * k);
+    double alpha = 1.0f / (4.0f * k);
+    double beta = 6.0f / (4.0f * k);
     p = (1 - alpha - beta) * mesh.point(v);
 
     for (auto vv_it = mesh.vv_iter(v); vv_it.is_valid(); ++vv_it)
@@ -40,12 +39,12 @@ void compute_CC_edge(MyMesh &mesh, MyMesh::EdgeHandle e, OpenMesh::Vec3f &p)
 {
     p = OpenMesh::Vec3f(0, 0, 0);
 
-    auto h0 = mesh.halfedge_handle(e, 0);
-    auto h1 = mesh.halfedge_handle(e, 1);
+    OpenMesh::HalfedgeHandle h0 = mesh.halfedge_handle(e, 0);
+    OpenMesh::HalfedgeHandle h1 = mesh.halfedge_handle(e, 1);
 
     // First halfedge
     p += 6.0f * mesh.point(mesh.to_vertex_handle(h0));
-    auto h = mesh.next_halfedge_handle(h0);
+    OpenMesh::HalfedgeHandle h = mesh.next_halfedge_handle(h0);
     p += 1.0f * mesh.point(mesh.to_vertex_handle(h));
     h = mesh.next_halfedge_handle(h);
     p += 1.0f * mesh.point(mesh.to_vertex_handle(h));
@@ -84,10 +83,10 @@ std::tuple<MyMesh, int> subdivision(MyMesh &mesh, int &prev_idx, int depth, cons
     // Face points
     for ( auto f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it) {
 
-        auto f = *f_it;
-        if (!mesh.data(f).visited) {
-            continue;
-        }
+        OpenMesh::FaceHandle f = *f_it;
+//        if (!mesh.data(f).visited) {
+//            continue;
+//        }
 
         // --- Compute the new face point using compute_CC_face ---
         OpenMesh::Vec3f p;
@@ -130,7 +129,7 @@ std::tuple<MyMesh, int> subdivision(MyMesh &mesh, int &prev_idx, int depth, cons
 
     // Edge points
     for (auto e_it = mesh.edges_begin(); e_it != mesh.edges_end(); ++e_it) {
-        auto e = *e_it;
+        OpenMesh::EdgeHandle e = *e_it;
         if (!mesh.data(e).valid) {
             continue;
         }
@@ -144,12 +143,12 @@ std::tuple<MyMesh, int> subdivision(MyMesh &mesh, int &prev_idx, int depth, cons
         mesh_next.add_vertex(p);  // Add the new vertex to the next mesh
 
         // Add edge data for JSON output
-        auto h0 = mesh.halfedge_handle(e, 0);
-        auto h1 = mesh.halfedge_handle(e, 1);
-        auto v0 = mesh.to_vertex_handle(h0);
-        auto v1 = mesh.to_vertex_handle(h1);
-        auto f0 = mesh.face_handle(h0);
-        auto f1 = mesh.face_handle(h1);
+        OpenMesh::HalfedgeHandle h0 = mesh.halfedge_handle(e, 0);
+        OpenMesh::HalfedgeHandle h1 = mesh.halfedge_handle(e, 1);
+        OpenMesh::VertexHandle v0 = mesh.to_vertex_handle(h0);
+        OpenMesh::VertexHandle v1 = mesh.to_vertex_handle(h1);
+        OpenMesh::FaceHandle f0 = mesh.face_handle(h0);
+        OpenMesh::FaceHandle f1 = mesh.face_handle(h1);
 
         e_data.push_back(v0.idx() + prev_idx);
         e_data.push_back(v1.idx() + prev_idx);
@@ -167,7 +166,7 @@ std::tuple<MyMesh, int> subdivision(MyMesh &mesh, int &prev_idx, int depth, cons
     // Vertex points
     offset = 0;
     for (auto v_it = mesh.vertices_begin(); v_it != mesh.vertices_end(); ++v_it) {
-        auto v = *v_it;
+        OpenMesh::VertexHandle v = *v_it;
         if (!mesh.data(v).valid) {
             continue;
         }
@@ -188,11 +187,11 @@ std::tuple<MyMesh, int> subdivision(MyMesh &mesh, int &prev_idx, int depth, cons
         }
 
         for (auto ve_it = mesh.ve_iter(v); ve_it.is_valid(); ++ve_it) {
-            auto edge = *ve_it;
-            auto h0 = mesh.halfedge_handle(edge, 0);
-            auto h1 = mesh.halfedge_handle(edge, 1);
-            auto v0 = mesh.to_vertex_handle(h0);
-            auto v1 = mesh.to_vertex_handle(h1);
+            OpenMesh::EdgeHandle edge = *ve_it;
+            OpenMesh::HalfedgeHandle h0 = mesh.halfedge_handle(edge, 0);
+            OpenMesh::HalfedgeHandle h1 = mesh.halfedge_handle(edge, 1);
+            OpenMesh::VertexHandle v0 = mesh.to_vertex_handle(h0);
+            OpenMesh::VertexHandle v1 = mesh.to_vertex_handle(h1);
             if (v0 != v) {
                 v_data.push_back(v0.idx() + prev_idx);
             }
@@ -217,7 +216,7 @@ std::tuple<MyMesh, int> subdivision(MyMesh &mesh, int &prev_idx, int depth, cons
     // Create new faces in mesh_next
     for (auto f_it = mesh.faces_begin(); f_it != mesh.faces_end(); ++f_it)
     {
-        auto f = *f_it;
+        OpenMesh::FaceHandle f = *f_it;
         if (!mesh.data(f).interior){
             continue;
         }
@@ -255,12 +254,12 @@ std::tuple<MyMesh, int> subdivision(MyMesh &mesh, int &prev_idx, int depth, cons
 
             // std::cout << new_tex_coords[0] << " " << new_tex_coords[1] << " " << new_tex_coords[2] << " " << new_tex_coords[3] << std::endl;
 
-            auto last_face_handle = mesh_next.face_handle(mesh_next.n_faces() - 1);
+            OpenMesh::FaceHandle last_face_handle = mesh_next.face_handle(mesh_next.n_faces() - 1);
 
             int tmp = 0;
-            for (auto fh_it = mesh_next.fh_iter(last_face_handle); fh_it.is_valid(); ++fh_it)
+            for (auto fh_it2 = mesh_next.fh_iter(last_face_handle); fh_it2.is_valid(); ++fh_it2)
             {
-                mesh_next.data(*fh_it).texcoord2D = new_tex_coords[tmp++];
+                mesh_next.data(*fh_it2).texcoord2D = new_tex_coords[tmp++];
             }
 
             if (mesh.data(f).patched) {

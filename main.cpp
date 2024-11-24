@@ -1,9 +1,10 @@
 #include <iostream>
 #include <string>
-#include <vector>
+
 
 // Include OpenMesh headers
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+#include <OpenMesh/Core/IO/MeshIO.hh>
 
 // Include other necessary headers
 #include "get_patch.h"
@@ -20,7 +21,7 @@ int main()
     std::cout << "input file: ";
     std::string input_file, str_name, output_dir;
 
-    input_file = "monsterfrog.obj";
+    input_file = "monsterfrog_fixed2.obj";
     std::cout << input_file << std::endl;
 
     std::cout << "depth of subdivision: ";
@@ -36,9 +37,11 @@ int main()
     {
         std::cout << "depth: " << i << std::endl;
         get_patch(mesh, idx, i, output_dir);
-        get_extraordinary(mesh, output_dir, i);
+        get_extraordinary(mesh);
 
         write_extraordinary_points(mesh, output_dir, idx, i);
+
+        get_limit_point(mesh, output_dir, i, idx);
 
         if (i == depth + 1)
         {
@@ -48,11 +51,10 @@ int main()
         // Subdivide the mesh
         std::tie(mesh, idx) = subdivision(mesh, idx, i, output_dir);
 
-//        // export the mesh to obj
-//        std::string output_file = output_dir + "/subdivision" + std::to_string(i) + ".obj";
-//        OpenMesh::IO::write_mesh(mesh, output_file);
-
-        get_limit_point(mesh, output_dir, i, idx);
+        // export the mesh to obj
+        std::string output_file = output_dir + "/subdivision" + std::to_string(i) + ".obj";
+        OpenMesh::IO::write_mesh(mesh, output_file);
+        // get_limit_point(mesh, output_dir, i, idx);
 
         add_dash(output_dir);
     }

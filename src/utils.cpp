@@ -140,6 +140,11 @@ void compress_output_dir(const std::string &str_name)
     std::string zip_file = output_dir + ".zip";
     std::string cmd = "zip -r " + zip_file + " " + output_dir + " > /dev/null 2>&1";
 
+    // if zip file exist then remove it
+    if (fs::exists(zip_file)){
+        fs::remove(zip_file);
+    }
+
     int result = system(cmd.c_str());
     if (result != 0) {
         std::cerr << "Failed to compress the directory: " << output_dir << std::endl;
