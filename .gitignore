@@ -1,9 +1,11 @@
 .DS_Store
+.idea
 
 OpenMesh-11.0.0-mac-arm
 OpenMesh-11.0.0-mac-intel
 
 cmake-build-debug
+cmake-build-debug2
 
 .idea
 
