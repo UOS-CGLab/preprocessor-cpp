@@ -1,6 +1,6 @@
 # Preprocessor
 
-This program is a Preprocessor of [Subdivifion](https://github.com/UOS-CGLab/Subdivision)
+This program is a Preprocessor of [Subdivision](https://github.com/UOS-CGLab/Subdivision).
 
 
 ## Contents
@@ -57,7 +57,7 @@ If the valence is not 4, the code marks the 3 layers of faces around the vertex 
 After checking all the vertices, the code iterates through the all faces of the mesh, 
 checking if the face have a extraordinary vertex which is not included in the patch.
 If the face has a extraordinary vertex, the code writhe the face vertices indices 
-and texture coordinates into a file named `extraordinary.txt` **This only works with depth > 0**
+and texture coordinates into a file named `extraordinary.txt` **This only works with depth > 0**.
 
 ### Subdivision
 
