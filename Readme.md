@@ -44,9 +44,14 @@ If all the above conditions are satisfied, meaning that the face is at the cente
 The code gathers data including vertex indices and texture coordinates of the patch 
 and saves it into a file named `patch.txt` in the output directory.
 
-
 <img src="./etc/imgs/patch2.svg" alt="Description" width="400"> 
 
+```c++
+write_into_file(
+  v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15,
+  idx, v5_texcoords, v6_texcoords, v9_texcoords, v10_texcoords, output_dir
+);
+```
 
 ### Find extraordinary points
 
@@ -72,10 +77,11 @@ The code for this step is in [subdivision.cpp](https://github.com/UOS-CGLab/prep
 
 The Catmull-Clark subdivision algorithm is used to subdivide the mesh.
 
-For face and edge texture coordinates, 
-the average value of the texture coordinates of the containing vertices is used.
+For face and edge vertices, 
+the average of the texture coordinates of the containing vertices is used.
 
 <img src="./etc/imgs/texcoords.svg" width="400">
+
 
 Vertex texture coordinates are the same as the original vertex texture coordinates.
 
@@ -93,7 +99,7 @@ The code for this step is in [get_limit_point.cpp](https://github.com/UOS-CGLab/
 
 The code iterates through all the vertices of the mesh, find the extraordinary vertices(i.e., valence is not 4).
 
-For each extraordinary vertex, the code iterates through the halfedges around the vertex:
+For each extraordinary vertex, the code iterates through the half-edges starting from the vertex.
 ```cpp
 for (auto voh_it = mesh.voh_iter(*v_it); voh_it.is_valid(); ++voh_it)
 ```
@@ -102,7 +108,13 @@ It finds ____________
 and saves all the relevant vertices into a file named `limit_point.json`.
 <img src="./etc/imgs/limitpoints.svg" width="800">
 
-
+```c++
+for (auto veoh_it = mesh.voh_iter(ve); veoh_it.is_valid(); ++veoh_it)
+{
+    output.push_back(mesh.to_vertex_handle(*veoh_it).idx() + idx);
+    output.push_back(mesh.to_vertex_handle(mesh.next_halfedge_handle(*veoh_it)).idx() + idx);
+}
+```
 
 
 
