@@ -29,7 +29,7 @@ The program also organizes and compresses the results into a structured output d
 
 ### find patches
 
-code of this step is in [get_patch.cpp]()
+code of this step is in [get_patch.cpp](https://github.com/UOS-CGLab/preprocessor-cpp/blob/main/src/get_patch.cpp)
 
 The code iterates through all the faces of the mesh, checking the following five conditions during each iteration:
 
@@ -48,7 +48,7 @@ After gathering the data, the code write the data into a file named `patch.txt`
 
 ### find extraordinary points
 
-code of this step is in [get_extraordinary.cpp]()
+code of this step is in [get_extraordinary.cpp](https://github.com/UOS-CGLab/preprocessor-cpp/blob/main/src/get_extraordinary.cpp)
 
 The code iterates through all the vertices of the mesh, checking if the vertex has not been processed and the valence is not 4.
 If the valence is not 4, the code marks the 3 layers of faces around the vertex to be subdivided.
@@ -61,14 +61,47 @@ and texture coordinates into a file named `extraordinary.txt` **This only works 
 
 ### Subdivision
 
+code of this step is in [subdivision.cpp](https://github.com/UOS-CGLab/preprocessor-cpp/blob/main/src/subdivision.cpp)
+
 We use the Catmull-Clark subdivision algorithm to subdivide the mesh.
 
+For the face and edge texture coordinates, we use average value of the texture coordinates of the containing vertices.
+
+<img src="./etc/imgs/texcoords.svg" width="400">
+
+Vertex texture coordinates are the same as the original vertex texture coordinates.
+
+For each subdivided face, texture coordinates are saved as follows:
+```cpp
+std::vector<OpenMesh::Vec2f> new_tex_coords = {mid_point, v1_texcoord, v2_texcoord, v3_texcoord};
+```
+<img src="./etc/imgs/texcoord_subdivided.svg" width="400">
+ 
 
 ### find limit points
 
-code of this step is in [get_limit_point.cpp]()
+code of this step is in [get_limit_point.cpp](https://github.com/UOS-CGLab/preprocessor-cpp/blob/main/src/get_limit_point.cpp)
 
-The code iterates through all the vertices of the mesh, checking if the vertex is not a boundary and the valence is not 4.
+The code iterates through all the vertices of the mesh, find the extraordinary vertices(i.e. valence is not 4).
+
+For each extraordinary vertex, the code iterates through halfedges around the vertex,
+```cpp
+for (auto voh_it = mesh.voh_iter(*v_it); voh_it.is_valid(); ++voh_it)
+```
+
+find neighboring vertices of vv and ve include itself, and save all the vertices into a file named `limit_point.json`. 
+
+<img src="./etc/imgs/limitpoints.svg" width="800">
+
+
+
+
+
+
+
+
+
+
 
 
 
