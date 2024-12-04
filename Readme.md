@@ -97,7 +97,7 @@ For each extraordinary vertex, the code iterates through the halfedges around th
 for (auto voh_it = mesh.voh_iter(*v_it); voh_it.is_valid(); ++voh_it)
 ```
 
-It finds the neighboring vertices of the vertex (including itself) 
+It finds ____________ 
 and saves all the relevant vertices into a file named `limit_point.json`.
 <img src="./etc/imgs/limitpoints.svg" width="800">
 
