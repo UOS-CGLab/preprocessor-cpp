@@ -35,14 +35,14 @@ This step iterates through all the faces of the mesh,
 checking the following five conditions during each iteration:
 
 1. The face has not been processed yet.
-2. The face is not a boundary and has an extraordinary vertex (i.e., valence is not 4). 
-3. All neighboring faces also have an extraordinary vertex.
+2. The face is a square and not a boundary.
+3. All neighboring faces are also squares.
 4. If the depth is not 0, all neighboring faces must not be boundaries.
 5. The face does not contain any extraordinary vertices.
 
 If all the above conditions are satisfied, meaning that the face is at the center of a patch. 
 The code gathers data including vertex indices and texture coordinates of the patch 
-and saves it into a file named patch.txt in the output directory.
+and saves it into a file named `patch.txt` in the output directory.
 
 
 <img src="./etc/imgs/patch2.svg" alt="Description" width="400"> 
@@ -83,6 +83,7 @@ For each subdivided face, texture coordinates are saved as follows:
 ```cpp
 std::vector<OpenMesh::Vec2f> new_tex_coords = {mid_point, v1_texcoord, v2_texcoord, v3_texcoord};
 ```
+
 <img src="./etc/imgs/texcoord_subdivided.svg" width="400">
  
 
