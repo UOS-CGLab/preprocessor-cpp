@@ -44,7 +44,7 @@ If all the above conditions are satisfied, meaning that the face is at the cente
 The code gathers data including vertex indices and texture coordinates of the patch 
 and saves it into a file named `patch.txt` in the output directory.
 
-<img src="./etc/imgs/patch2.svg", width="400"> 
+<img src="./etc/imgs/patch2.svg" width="400">
 
 ```c++
 write_into_file(
